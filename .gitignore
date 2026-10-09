@@ -1,0 +1,5 @@
+app
+app.exe
+*.o
+*.out
+.vscode/
