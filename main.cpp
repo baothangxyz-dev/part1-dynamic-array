@@ -3,61 +3,58 @@
 #include "DynamicArray.h"
 
 int main() {
-    std::cout << "=== 1. DEMO WITH INTEGERS ===" << std::endl;
-
-    DynamicArray<int> arr1(2);
-    arr1.set(0, 10);
-    arr1.set(1, 20);
-
-    DynamicArray<int> arr2(2);
-    arr2.set(0, 15);
-    arr2.set(1, 25);
-
-    std::cout << "Array 1: " << arr1 << std::endl;
-    std::cout << "Array 2: " << arr2 << std::endl;
+    std::cout << "=== 1. OPERATOR [] ===" << std::endl;
+    DynamicArray<int> arr1(3);
+    arr1[0] = 10; // Using operator[] as setter
+    arr1[1] = 20;
+    arr1[2] = 30;
+    std::cout << "arr1: " << arr1 << std::endl;
+    std::cout << "arr1[1] = " << arr1[1] << std::endl; // Using operator[] as getter
 
     try {
-        double dist = calculateDistance(arr1, arr2);
-        std::cout << "Distance: " << dist << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        arr1[5] = 100; // Out of bounds
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Caught out_of_range: " << e.what() << std::endl;
     }
 
-    try {
-        std::cout << "\nAttempting to set value 150 (invalid)..." << std::endl;
-        arr1.set(0, 150);
-    } catch (const std::invalid_argument& e) {
-        std::cerr << "Caught invalid_argument: " << e.what() << std::endl;
-    }
-
-    std::cout << "\n=== 2. DEMO WITH STRINGS ===" << std::endl;
-
-    DynamicArray<std::string> strArr1(1);
-    DynamicArray<std::string> strArr2(1);
-
-    strArr1.set(0, "Hello");
-    strArr2.set(0, "World");
-
-    std::cout << "String Array 1: " << strArr1 << std::endl;
-    std::cout << "String Array 2: " << strArr2 << std::endl;
-
-    try {
-        std::cout << "Attempting to calculate distance with strings..." << std::endl;
-        double dist = calculateDistance(strArr1, strArr2);
-    } catch (const std::bad_typeid& e) {
-        std::cerr << "Caught bad_typeid: Cannot calculate distance for non-numeric types!" << std::endl;
-    }
-
-    std::cout << "\n=== 3. DEMO WITH DIFFERENT SIZES ===" << std::endl;
-
+    std::cout << "\n=== 2. COMPARISON OPERATORS ===" << std::endl;
+    DynamicArray<int> arr2(3);
+    arr2[0] = 10; arr2[1] = 20; arr2[2] = 30;
     DynamicArray<int> arr3(3);
-    try {
-        std::cout << "Attempting to calculate distance with different sizes..." << std::endl;
-        calculateDistance(arr1, arr3);
-    } catch (const std::invalid_argument& e) {
-        std::cerr << "Caught invalid_argument: " << e.what() << std::endl;
-    }
+    arr3[0] = 10; arr3[1] = 20; arr3[2] = 99;
 
-    std::cout << "\n=== DONE ===" << std::endl;
+    std::cout << "arr1 == arr2: " << (arr1 == arr2 ? "true" : "false") << std::endl;
+    std::cout << "arr1 != arr3: " << (arr1 != arr3 ? "true" : "false") << std::endl;
+
+    std::cout << "\n=== 3. ARITHMETIC OPERATORS ===" << std::endl;
+    DynamicArray<int> arr4(3);
+    arr4[0] = 1; arr4[1] = 2; arr4[2] = 3;
+    DynamicArray<int> arr5(2); // Different size to test padding with zeros
+    arr5[0] = 10; arr5[1] = 20;
+
+    std::cout << "Before +=: arr4 = " << arr4 << std::endl;
+    arr4 += arr5;
+    std::cout << "After +=: arr4 = " << arr4 << std::endl; // 1+10, 2+20, 3+0
+
+    arr4 += 5; // Scalar addition
+    std::cout << "After + 5 (scalar): arr4 = " << arr4 << std::endl;
+    
+    arr4 -= 10; // Scalar subtraction
+    std::cout << "After - 10 (scalar): arr4 = " << arr4 << std::endl;
+
+    std::cout << "\n=== 4. ITERATORS (RANGE-BASED FOR) ===" << std::endl;
+    std::cout << "Iterating over arr1: ";
+    for (const auto& x : arr1) {
+        std::cout << x << " ";
+    }
+    std::cout << std::endl;
+
+    // Modifying elements through iterator (non-const)
+    std::cout << "Doubling elements of arr1...\n";
+    for (auto& x : arr1) {
+        x *= 2;
+    }
+    std::cout << "arr1 after modification: " << arr1 << std::endl;
+
     return 0;
 }
