@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <cmath>
-#include <iterator> // For std::begin, std::end
+#include <utility> // Cần cho std::move
 
 template <typename T>
 class DynamicArray {
@@ -29,6 +29,7 @@ private:
     }
 
 public:
+    // 1. Default Constructor
     explicit DynamicArray(int arraySize = 0) : data(nullptr), size(arraySize) {
         if (arraySize < 0) {
             throw std::invalid_argument("Array size cannot be negative");
@@ -36,29 +37,57 @@ public:
         data = new T[arraySize]();
     }
 
+    // 2. Destructor
+    ~DynamicArray() {
+        delete[] data;
+    }
+
+    // 3. Copy Constructor (Phần 1)
     DynamicArray(const DynamicArray& other) : data(new T[other.size]), size(other.size) {
         for (int i = 0; i < size; ++i) {
             data[i] = other.data[i];
         }
     }
 
+    // 4. Copy Assignment Operator (Zadanie 1 - Đã tối ưu)
     DynamicArray& operator=(const DynamicArray& other) {
-        if (this != &other) {
-            T* newData = new T[other.size];
+        if (this != &other) { // Protect against self-assignment
+            T* newData = new T[other.size]; // Allocate new memory FIRST
             for (int i = 0; i < other.size; ++i) {
                 newData[i] = other.data[i];
             }
-            delete[] data;
-            data = newData;
+            delete[] data; // Free old memory
+            data = newData; // Steal new pointer
             size = other.size;
         }
         return *this;
     }
 
-    ~DynamicArray() {
-        delete[] data;
+    // 5. Move Constructor (Zadanie 2)
+    DynamicArray(DynamicArray&& other) noexcept 
+        : data(other.data), size(other.size) {
+        // Steal the pointer and reset the source
+        other.data = nullptr;
+        other.size = 0;
     }
 
+    // 6. Move Assignment Operator (Zadanie 3)
+    DynamicArray& operator=(DynamicArray&& other) noexcept {
+        if (this != &other) { // Protect against self-assignment
+            delete[] data; // Free own data first
+            
+            // Steal resources
+            data = other.data;
+            size = other.size;
+
+            // Reset source
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+
+    // --- Các hàm cũ giữ nguyên ---
     int getSize() const { return size; }
 
     void set(int index, T value) {
@@ -72,15 +101,6 @@ public:
         return data[index];
     }
 
-    void print() const {
-        std::cout << "{";
-        for (int i = 0; i < size; ++i) {
-            std::cout << data[i];
-            if (i + 1 < size) std::cout << ", ";
-        }
-        std::cout << "}" << std::endl;
-    }
-
     void pushBack(T value) {
         validateValue(value);
         T* newData = new T[size + 1];
@@ -92,13 +112,10 @@ public:
     }
 
     // --- ZADANIE 1: Operator [] ---
-    // Non-const version (allows writing: arr[0] = 5)
     T& operator[](int index) {
         validateIndex(index);
         return data[index];
     }
-
-    // Const version (allows reading: int x = arr[0] on a const array)
     const T& operator[](int index) const {
         validateIndex(index);
         return data[index];
@@ -112,14 +129,11 @@ public:
         }
         return true;
     }
-
     bool operator!=(const DynamicArray& other) const {
-        return !(*this == other); // Using the == operator we just wrote
+        return !(*this == other);
     }
 
-        // --- ZADANIE 3: Arithmetic Operators ---
-
-    // Array += Array (already exists, keep it)
+    // --- ZADANIE 3: Arithmetic Operators ---
     DynamicArray& operator+=(const DynamicArray& other) {
         for (int i = 0; i < size; ++i) {
             T otherValue = (i < other.size) ? other.data[i] : T(0);
@@ -128,8 +142,6 @@ public:
         }
         return *this;
     }
-
-    // Array -= Array (already exists, keep it)
     DynamicArray& operator-=(const DynamicArray& other) {
         for (int i = 0; i < size; ++i) {
             T otherValue = (i < other.size) ? other.data[i] : T(0);
@@ -138,24 +150,16 @@ public:
         }
         return *this;
     }
-
-    // NEW: Array += Scalar (int, double, etc.)
     DynamicArray& operator+=(T scalar) {
-        if constexpr (!std::is_arithmetic_v<T>) {
-            throw std::bad_typeid();
-        }
+        if constexpr (!std::is_arithmetic_v<T>) throw std::bad_typeid();
         for (int i = 0; i < size; ++i) {
             validateValue(data[i] + scalar);
             data[i] += scalar;
         }
         return *this;
     }
-
-    // NEW: Array -= Scalar (int, double, etc.)
     DynamicArray& operator-=(T scalar) {
-        if constexpr (!std::is_arithmetic_v<T>) {
-            throw std::bad_typeid();
-        }
+        if constexpr (!std::is_arithmetic_v<T>) throw std::bad_typeid();
         for (int i = 0; i < size; ++i) {
             validateValue(data[i] - scalar);
             data[i] -= scalar;
@@ -163,16 +167,12 @@ public:
         return *this;
     }
 
-    // --- ZADANIE 4: Iterators for Range-based for loop ---
-    // Returns a pointer to the first element
+    // --- ZADANIE 4: Iterators ---
     T* begin() { return data; }
     const T* begin() const { return data; }
-
-    // Returns a pointer to one past the last element
     T* end() { return data + size; }
     const T* end() const { return data + size; }
 
-    // Friend operator<< (from Part 3)
     friend std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr) {
         os << "{";
         for (int i = 0; i < arr.size; ++i) {
@@ -184,7 +184,6 @@ public:
     }
 };
 
-// calculateDistance function (from Part 3)
 template <typename T>
 double calculateDistance(const DynamicArray<T>& a, const DynamicArray<T>& b) {
     if (a.getSize() != b.getSize()) {
