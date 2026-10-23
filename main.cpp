@@ -1,38 +1,63 @@
-#include "DynamicArray.h"
 #include <iostream>
-using namespace std;
+#include <string>
+#include "DynamicArray.h"
 
 int main() {
-    cout << "===== TASK 1 =====\n";
-    DynamicArray a(5);
-    a.set(0, 10); a.set(1, -20); a.set(2, 30); a.set(3, 40); a.set(4, 50);
-    cout << "a = "; a.print();
-    cout << "a.get(2) = " << a.get(2) << endl;
-    a.set(10, 5);
-    a.set(0, 200);
+    std::cout << "=== 1. DEMO WITH INTEGERS ===" << std::endl;
 
-    cout << "\n===== TASK 2 =====\n";
-    DynamicArray b = a;
-    b.set(0, 99);
-    cout << "a = "; a.print();
-    cout << "b = "; b.print();
+    DynamicArray<int> arr1(2);
+    arr1.set(0, 10);
+    arr1.set(1, 20);
 
-    cout << "\n===== TASK 3 =====\n";
-    a.append(60);
-    a.append(70);
-    a.append(200);
-    cout << "a sau append = "; a.print();
+    DynamicArray<int> arr2(2);
+    arr2.set(0, 15);
+    arr2.set(1, 25);
 
-    cout << "\n===== TASK 4 =====\n";
-    DynamicArray x(3), y(2);
-    x.set(0, 1); x.set(1, 2); x.set(2, 3);
-    y.set(0, 10); y.set(1, 20);
-    cout << "x = "; x.print();
-    cout << "y = "; y.print();
-    x.add(y);
-    cout << "x.add(y) = "; x.print();
-    x.subtract(y);
-    cout << "x.subtract(y) = "; x.print();
+    std::cout << "Array 1: " << arr1 << std::endl;
+    std::cout << "Array 2: " << arr2 << std::endl;
 
+    try {
+        double dist = calculateDistance(arr1, arr2);
+        std::cout << "Distance: " << dist << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    try {
+        std::cout << "\nAttempting to set value 150 (invalid)..." << std::endl;
+        arr1.set(0, 150);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Caught invalid_argument: " << e.what() << std::endl;
+    }
+
+    std::cout << "\n=== 2. DEMO WITH STRINGS ===" << std::endl;
+
+    DynamicArray<std::string> strArr1(1);
+    DynamicArray<std::string> strArr2(1);
+
+    strArr1.set(0, "Hello");
+    strArr2.set(0, "World");
+
+    std::cout << "String Array 1: " << strArr1 << std::endl;
+    std::cout << "String Array 2: " << strArr2 << std::endl;
+
+    try {
+        std::cout << "Attempting to calculate distance with strings..." << std::endl;
+        double dist = calculateDistance(strArr1, strArr2);
+    } catch (const std::bad_typeid& e) {
+        std::cerr << "Caught bad_typeid: Cannot calculate distance for non-numeric types!" << std::endl;
+    }
+
+    std::cout << "\n=== 3. DEMO WITH DIFFERENT SIZES ===" << std::endl;
+
+    DynamicArray<int> arr3(3);
+    try {
+        std::cout << "Attempting to calculate distance with different sizes..." << std::endl;
+        calculateDistance(arr1, arr3);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Caught invalid_argument: " << e.what() << std::endl;
+    }
+
+    std::cout << "\n=== DONE ===" << std::endl;
     return 0;
 }
