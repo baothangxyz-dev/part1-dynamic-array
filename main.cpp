@@ -1,38 +1,60 @@
-#include "DynamicArray.h"
+
 #include <iostream>
-using namespace std;
+#include <stdexcept>
+#include <new>
+#include <limits>
+#include "DynamicArray.h"
 
 int main() {
-    cout << "===== TASK 1 =====\n";
-    DynamicArray a(5);
-    a.set(0, 10); a.set(1, -20); a.set(2, 30); a.set(3, 40); a.set(4, 50);
-    cout << "a = "; a.print();
-    cout << "a.get(2) = " << a.get(2) << endl;
-    a.set(10, 5);
-    a.set(0, 200);
+    DynamicArray arr(3);
 
-    cout << "\n===== TASK 2 =====\n";
-    DynamicArray b = a;
-    b.set(0, 99);
-    cout << "a = "; a.print();
-    cout << "b = "; b.print();
+    arr.set(0, 10);
+    arr.set(1, 20);
+    arr.set(2, 30);
 
-    cout << "\n===== TASK 3 =====\n";
-    a.append(60);
-    a.append(70);
-    a.append(200);
-    cout << "a sau append = "; a.print();
+    std::cout << "=== 1. out_of_range ===" << std::endl;
+    arr.print();
 
-    cout << "\n===== TASK 4 =====\n";
-    DynamicArray x(3), y(2);
-    x.set(0, 1); x.set(1, 2); x.set(2, 3);
-    y.set(0, 10); y.set(1, 20);
-    cout << "x = "; x.print();
-    cout << "y = "; y.print();
-    x.add(y);
-    cout << "x.add(y) = "; x.print();
-    x.subtract(y);
-    cout << "x.subtract(y) = "; x.print();
+    try {
+        arr.get(5);
+    } catch (const std::out_of_range& e) {
+        std::cout << "Caught out_of_range: "
+                  << e.what() << std::endl;
+    }
+
+    std::cout << "\n=== 2. invalid_argument ===" << std::endl;
+
+    try {
+        arr.set(0, 150);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "Caught invalid_argument: "
+                  << e.what() << std::endl;
+    }
+
+    try {
+        arr.pushBack(-150);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "Caught invalid_argument: "
+                  << e.what() << std::endl;
+    }
+
+    std::cout << "\n=== 3. bad_alloc ===" << std::endl;
+
+    try {
+        volatile std::size_t count =
+            std::numeric_limits<std::size_t>::max();
+
+        int* memory = new int[count];
+        delete[] memory;
+        std::cout << "Allocation succeeded on this system."
+                  << std::endl;
+    } catch (const std::bad_alloc& e) {
+        std::cout << "Caught bad_alloc: "
+                  << e.what() << std::endl;
+    }
+
+    std::cout << "\n=== Array still works ===" << std::endl;
+    arr.print();
 
     return 0;
 }
